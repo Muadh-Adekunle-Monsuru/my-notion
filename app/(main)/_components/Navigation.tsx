@@ -1,11 +1,34 @@
-import { ChevronLeft, MenuIcon } from 'lucide-react';
+import {
+	ChevronLeft,
+	MenuIcon,
+	Plus,
+	PlusCircle,
+	Search,
+	Settings,
+	Trash,
+} from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import React, { ElementRef, useEffect, useRef, useState } from 'react';
 import { useMediaQuery } from 'usehooks-ts';
 import { cn } from '@/lib/utils';
-
+import UserItem from './UserIcon';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+import Item from './Item';
+import { toast } from 'sonner';
+import DocumentList from './DocumentList';
+import {
+	Popover,
+	PopoverTrigger,
+	PopoverContent,
+} from '@/components/ui/popover';
+import Trashbox from './Trashbox';
+import { useSearch } from '@/hooks/use-search';
+import { useSettings } from '@/hooks/use-settings';
 export default function Navigation() {
 	const pathname = usePathname();
+	const search = useSearch();
+	const settings = useSettings();
 	const isMobile = useMediaQuery('(max-width:768px)');
 
 	const isResizingRef = useRef(false);
@@ -15,6 +38,7 @@ export default function Navigation() {
 	const [isResetting, setIsResetting] = useState(false);
 	const [isCollapsed, setIsCollapsed] = useState(isMobile);
 
+	const create = useMutation(api.documents.create);
 	useEffect(() => {
 		if (isMobile) {
 			collapse();
@@ -88,6 +112,15 @@ export default function Navigation() {
 			setTimeout(() => setIsResetting(false), 300);
 		}
 	};
+
+	const handleCreate = () => {
+		const promise = create({ title: 'Untitled' });
+		toast.promise(promise, {
+			loading: '📝Creating a new note...',
+			success: 'New note created✨',
+			error: 'Failed to create a new note⛔',
+		});
+	};
 	return (
 		<>
 			<aside
@@ -109,10 +142,26 @@ export default function Navigation() {
 					<ChevronLeft className='h-6 w-6' />
 				</div>
 				<div>
-					<p>Action Items</p>
+					<UserItem />
+					<Item label='Search' icon={Search} isSearch onClick={search.onOpen} />
+					<Item label='Settings' icon={Settings} onClick={settings.onOpen} />
+					<Item onClick={handleCreate} label='New page' icon={PlusCircle} />
 				</div>
+
 				<div className='mt-4'>
-					<p>Documents</p>
+					<DocumentList />
+					<Item onClick={handleCreate} icon={Plus} label='Add a new file' />
+					<Popover>
+						<PopoverTrigger className='w-full mt-4'>
+							<Item icon={Trash} label='Trash' />
+						</PopoverTrigger>
+						<PopoverContent
+							side={isMobile ? 'bottom' : 'right'}
+							className='p-0 w-72'
+						>
+							<Trashbox />
+						</PopoverContent>
+					</Popover>
 				</div>
 				<div
 					onMouseDown={handleMouseDown}
@@ -136,7 +185,6 @@ export default function Navigation() {
 							className='w-6 h-6 text-muted-foreground'
 						/>
 					)}
-					the navebacrk
 				</nav>
 			</div>
 		</>
