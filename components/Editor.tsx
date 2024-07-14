@@ -40,7 +40,7 @@ export default function Editor({
 		<div>
 			<BlockNoteView
 				editor={editor}
-				editable
+				editable={editable}
 				onChange={() => onChange(JSON.stringify(editor.document, null, 2))}
 				theme={resolvedTheme == 'dark' ? 'dark' : 'light'}
 			/>
