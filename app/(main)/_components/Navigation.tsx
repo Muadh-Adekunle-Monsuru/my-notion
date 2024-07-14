@@ -7,7 +7,7 @@ import {
 	Settings,
 	Trash,
 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import React, { ElementRef, useEffect, useRef, useState } from 'react';
 import { useMediaQuery } from 'usehooks-ts';
 import { cn } from '@/lib/utils';
@@ -25,8 +25,13 @@ import {
 import Trashbox from './Trashbox';
 import { useSearch } from '@/hooks/use-search';
 import { useSettings } from '@/hooks/use-settings';
+import NavBar from '@/app/(marketing)/_component/NavBar';
+import Navbar from './Navbar';
+import { useRouter } from 'next/navigation';
 export default function Navigation() {
 	const pathname = usePathname();
+	const router = useRouter();
+	const params = useParams();
 	const search = useSearch();
 	const settings = useSettings();
 	const isMobile = useMediaQuery('(max-width:768px)');
@@ -114,7 +119,9 @@ export default function Navigation() {
 	};
 
 	const handleCreate = () => {
-		const promise = create({ title: 'Untitled' });
+		const promise = create({ title: 'Untitled' }).then((documentId) =>
+			router.push(`/documents/${documentId}`)
+		);
 		toast.promise(promise, {
 			loading: '📝Creating a new note...',
 			success: 'New note created✨',
@@ -177,15 +184,19 @@ export default function Navigation() {
 					isMobile && 'left-0 w-full'
 				)}
 			>
-				<nav className='bg-transparent px-3 py-2 w-full'>
-					{isCollapsed && (
-						<MenuIcon
-							role='button'
-							onClick={resetWidth}
-							className='w-6 h-6 text-muted-foreground'
-						/>
-					)}
-				</nav>
+				{!!params.documentId ? (
+					<Navbar isCollapsed={isCollapsed} onResetWidth={resetWidth} />
+				) : (
+					<nav className='bg-transparent px-3 py-2 w-full'>
+						{isCollapsed && (
+							<MenuIcon
+								role='button'
+								onClick={resetWidth}
+								className='w-6 h-6 text-muted-foreground'
+							/>
+						)}
+					</nav>
+				)}
 			</div>
 		</>
 	);

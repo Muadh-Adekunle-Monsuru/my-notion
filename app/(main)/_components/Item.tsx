@@ -51,20 +51,20 @@ export default function Item({
 }: ItemProp) {
 	const create = useMutation(api.documents.create);
 	const archive = useMutation(api.documents.archive);
+	const { user } = useUser();
+	const router = useRouter();
+	const date = new Date(creationTime ?? '');
+
 	const onArchive = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		if (!id) return;
-		const promise = archive({ id });
+		const promise = archive({ id }).then(() => router.push('/documents'));
 		toast.promise(promise, {
 			loading: 'Moving to trash...',
 			success: 'Note moved to trash 🗑️',
 			error: 'Failed to archive note.',
 		});
 	};
-	const { user } = useUser();
-	const router = useRouter();
-	const date = new Date(creationTime ?? '');
-
 	const handleExpand = (event: React.MouseEvent) => {
 		event.stopPropagation();
 		onExpand?.();
@@ -80,7 +80,7 @@ export default function Item({
 			if (!expanded) {
 				onExpand?.();
 			}
-			// router.push(`documents/${documentId}`);
+			router.push(`/documents/${documentId}`);
 		});
 
 		toast.promise(promise, {
